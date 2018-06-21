@@ -7,6 +7,9 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 
+// Processes the input of Arduino board. As the arduino.Arduino library is not as good
+// as it could be, the class uses the com-port directly.
+
 public class ArduinoProcessor implements Runnable{
     private static final int MODE_INPUT = 0;
     private static final int MODE_OUTPUT = 1;
@@ -95,6 +98,9 @@ public class ArduinoProcessor implements Runnable{
                 String cmd = commands.next();
                 if(cmd.equals("#finish"))
                     return;
+                
+                // Splitting the command by "#" - one part of this command is sent to Arduino, the
+                // other has some additional information for this class.
                 String[] commandParts = cmd.split("#");
                 cmd = commandParts[0];
                 String description= commandParts[1];
