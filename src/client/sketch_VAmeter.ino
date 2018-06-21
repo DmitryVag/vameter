@@ -22,25 +22,32 @@
 
 #define VOLTAGE_CONV (5.0f/1024.0f)
 
+//A state of pins charging or decharging capacitor
 struct vState {
   int vDown;
   int vUp1;
   int vUp2;
 };
 
+//A point of volt-amper characteeristics 
 struct point {
   float elemV;
   float elemI;
   float capacitorV;
 };
 
-
+//All the available states. There could be more, but it is a bit difficult to compare them.
 struct vState states [] = {
   {HIGH, LOW, LOW}, {LOW, LOW, LOW}, {LOW, HIGH, LOW}, {LOW, LOW, HIGH}, {LOW, HIGH, HIGH}
 };
 
+//The points that could me maesured at once
 struct point points [N_POINTS];
+
+//The package of data that could be read from the server
 char* package [10];
+
+//The step in voltage between two points. 
 double vStep = 0.05;
 
 void swichState(struct vState state) {
@@ -49,6 +56,7 @@ void swichState(struct vState state) {
   digitalWrite(PIN_V_UP_2, state.vUp2);
 }
 
+//Measures one point 
 struct point processPoint(int resistorSignal) {
   struct point p;
 
@@ -61,11 +69,12 @@ struct point processPoint(int resistorSignal) {
   
   p.elemV = fullV - resistV;
   p.elemI = (resistV - diodeV) / resistance;
-  p.capacitorV = 
+  p.capacitorV = capV;
 
   return p;
 }
 
+//Printing a point to the serial port. "capacitorV" isn't printed as there is no code to process it.
 void printPoint(struct point p) {
   Serial.print(p.elemV * 100);
   Serial.print("\t");
@@ -87,13 +96,12 @@ void setup() {
   }
 }
 
+
+// Loading a package of data from serial port. The package is an arrray of strings splitted by "splitter" and finished by "finish". 
 void loadPackage(char** package, char splitter, char finish) {
   for (int i = 0; i < 10; i++) {
-    //    Serial.println((int)package[i]);
     if (package[i] == 0) {
       package[i] = new char[20];
-      //      Serial.print("to: ");
-      //      Serial.println((int)package[i]);
     }
     package[i][0] = '\0';
   }
@@ -102,14 +110,10 @@ void loadPackage(char** package, char splitter, char finish) {
   while (true) {
     while (Serial.available() == 0) {}
     char c = Serial.read();
-    //    Serial.print("Got ");
-    //    Serial.println(c);
     if (c == finish) {
-      //      Serial.println("f");
       package[i][j++] = '\0';
       break;
     } else if (c == splitter) {
-      //      Serial.println("l");
       package[i][j++] = '\0';
       i++;
       j = 0;
@@ -119,6 +123,7 @@ void loadPackage(char** package, char splitter, char finish) {
   }
 }
 
+//Readiing the array of points.
 void readData(int targetState, int resistorSignal) {
   long lastTime = millis();
   int nPoints = 1;
@@ -150,6 +155,8 @@ void readData(int targetState, int resistorSignal) {
   }
 }
 
+//Converting a string to a positive integer. 
+//This function is not stabile - it will crash if the string is too long or contains unsupported characters.
 int getInteger (char* s) {
   int res = 0;
   for (char* i = s; (*(i + 1)) != '\0'; i++) {
@@ -159,12 +166,10 @@ int getInteger (char* s) {
   return res;
 }
 
+//Taking and processing commands
 void loop() {
   if (Serial.available() > 0) {
     loadPackage(package, ' ', '\n');
-//    for (int i = 0; i < 10; i++)
-//      Serial.println(package[i]);
-
     if (!strcmp(package[0], "Get")) {
 
       int targetState = package[1][0] - '0';
