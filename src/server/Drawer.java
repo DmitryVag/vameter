@@ -1,8 +1,3 @@
-// Вспомогательный класс, отвечающий за масштабируемое рисование
-// Вагин Дмитрий, 9а
-// 10.12.2017
-
-
 import java.awt.*;
 import java.awt.font.FontRenderContext;
 import java.awt.geom.Point2D;
@@ -12,6 +7,10 @@ import java.awt.image.ImageObserver;
 import java.awt.image.ImageProducer;
 import java.util.ArrayList;
 
+
+// This class provides an ability to draw in scaled and moved 2-d coordinate system 
+// in order to simplify the drawing the same things in resizeble components. Also
+// uses some bufferisation that can speed-up the drawing.
 
 public class Drawer {
 
@@ -58,6 +57,9 @@ public class Drawer {
             image.setScale(reqSize/size, 1);
         return image;
     }
+    
+    // Inits the scaling and moving parameters to the screen with given width and height, making the
+    // point (x1,y1) to be in the up-left corner, (x2,y2) - in the down-right corner
 
     void initFullScreen(Graphics2D g, double x1, double y1, double x2, double y2, int width, int height) {
         this.width = width;
@@ -102,6 +104,8 @@ public class Drawer {
         beginX = (int) (-x1 * scaleX + (width - (x2 - x1) * scaleX) / 2);
         beginY = (int) (-y1 * scaleY + (height - (y2 - y1) * scaleY) / 2);
     }
+    
+    // All the other metods are equal to the metods of Graphics.
 
     void setColor(double red, double green, double blue) {
         graphics.setColor(new Color((int) (red * 255), (int) (green * 255), (int) (blue * 255)));
