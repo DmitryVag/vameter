@@ -1,6 +1,13 @@
 import java.io.IOException;
 import java.io.InputStream;
 
+// Some kind of a scanner to process an imput stream.
+// The difference between this scanner and the original one is
+// that it doesn't stop reading when the stream's finished.
+// It is useful for communicating with Aduino because the data
+// is not sent momentally and usual scranner stops in the middle
+// of a string.
+
 public class MyScanner {
     InputStream input;
     String spaceSymbols = " \t\r\n";
@@ -10,6 +17,9 @@ public class MyScanner {
         this.input = input;
     }
 
+    // This metod waits while the input stream is empty,
+    // so if the board is disconneccted the thread will stop
+    // in an infinite loop.
     private char nextChar() throws IOException {
         while (input.available() == 0) {
             Thread.yield();
@@ -17,6 +27,8 @@ public class MyScanner {
         return (char) input.read();
     }
 
+    
+    // "Word" is a string surrounded by space symbols
     String nextWord() {
         char c;
         StringBuilder word = new StringBuilder();
